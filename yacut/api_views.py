@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import abort, jsonify, request
 
 from . import app, db
 from .error_handlers import InvalidAPIUsage
@@ -11,17 +11,17 @@ def create_id():
     data = request.get_json()
     original = data['url']
     if not data:
-        raise InvalidAPIUsage('Отсутствует тело запроса')
+        abort(400, 'Отсутствует тело запроса')
     if 'url' not in data:
-        raise InvalidAPIUsage(f"{original} является обязательным полем!")
+        abort(400, f"{original} является обязательным полем!")
     if 'custom_id' not in data or data['custom_id'] is None or data['custom_id'] == "":
         short = get_unique_short_id()
     if 'custom_id' in data:
         short = data['custom_id']
         if len(data['custom_id']) > 16:
-            raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
+            abort(400, 'Указано недопустимое имя для короткой ссылки')
         if URL_map.query.filter_by(short=data['custom_id']).first() is not None:
-            raise InvalidAPIUsage(f'Имя "{short}" уже занято.', 400)
+            abort(400, f'Имя "{short}" уже занято.')
     url_obj = URL_map(original=original, short=short)
     db.session.add(url_obj)
     db.session.commit()
@@ -33,4 +33,4 @@ def get_url(short_id):
     obj = URL_map.query.filter_by(short=short_id).first()
     if obj:
         return jsonify({'url': obj.original}), 200
-    raise InvalidAPIUsage('Указанный id не найден', 404)
+    abort(404, 'Указанный id не найден')
