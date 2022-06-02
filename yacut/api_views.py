@@ -19,8 +19,7 @@ def create_id():
     if 'custom_id' in data:
         short = data['custom_id']
         if len(data['custom_id']) > 16:
-            return jsonify({
-                    'message': 'Указано недопустимое имя для короткой ссылки'}), 400
+            return jsonify({'message': 'Указано недопустимое имя для короткой ссылки'}), 400
         if URL_map.query.filter_by(short=data['custom_id']).first() is not None:
             raise InvalidAPIUsage(f'Имя "{short}" уже занято.', 400)
     url_obj = URL_map(original=original, short=short)
