@@ -12,5 +12,5 @@ class URL_map(db.Model):
     def to_dict(self):
         return dict(
             url=self.original,
-            custom_id=self.short,
+            short_link=self.short,
         )

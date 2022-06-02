@@ -9,16 +9,16 @@ from .views import get_long, get_unique_short_id
 @app.route('/api/id/', methods=['POST'])
 def create_id():
     data = request.get_json()
-    if 'url' not in data and 'short' not in data:
-        raise InvalidAPIUsage('Пустой запрос!')
+    if 'url' not in data and 'short_link' not in data:
+        raise InvalidAPIUsage('Отсутствует тело запроса')
     if 'url' not in data:
-        raise InvalidAPIUsage('Обязательное поле пустое!')
-    if 'custom_id' not in data:
-        data['custom_id'] = get_unique_short_id()
-    if 'custom_id' in data and URL_map.query.filter_by(short=data['custom_id']).first() is not None:
-        raise InvalidAPIUsage('Такое короткое имя уже есть!')
+        raise InvalidAPIUsage('"\"url\" является обязательным полем!')
+    if 'short_link' not in data:
+        data['short_link'] = get_unique_short_id()
+    if 'short_link' in data and URL_map.query.filter_by(short=data['short_link']).first() is not None:
+        raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
     original = data['url']
-    short = data['custom_id']
+    short = data['short_link']
     url_obj = URL_map(original=original, short=short)
     db.session.add(url_obj)
     db.session.commit()
@@ -30,4 +30,4 @@ def get_url(short_id):
     long = get_long(short_id)
     if long:
         return jsonify({'url': long}), 200
-    raise InvalidAPIUsage('Такое короткое имя не существует!')
+    raise InvalidAPIUsage('Указанный id не найден')
