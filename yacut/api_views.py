@@ -29,5 +29,5 @@ def create_id():
 def get_url(short_id):
     long = get_long(short_id)
     if long:
-        return redirect(long), 201
+        return jsonify({'url': long}), 200
     raise InvalidAPIUsage('Такое короткое имя не существует!')
