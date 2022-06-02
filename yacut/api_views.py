@@ -1,4 +1,4 @@
-from flask import abort, jsonify, request
+from flask import jsonify, request
 
 from . import app, db
 from .error_handlers import InvalidAPIUsage
