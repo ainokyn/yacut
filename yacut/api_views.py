@@ -20,7 +20,7 @@ def create_id():
     if 'custom_id' in data and URL_map.query.filter_by(short=data['custom_id']).first() is not None:
         raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
     original = data['url']
-    short = request.host_url+data['custom_id']
+    short = request.host_url + data['custom_id']
     url_obj = URL_map(original=original, short=short)
     db.session.add(url_obj)
     db.session.commit()
