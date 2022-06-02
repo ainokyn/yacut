@@ -13,14 +13,15 @@ def create_id():
         raise InvalidAPIUsage('Отсутствует тело запроса')
     if 'url' not in data:
         raise InvalidAPIUsage(f"{data['url']} является обязательным полем!")
-    if len(data['custom_id']) > 16:
-        raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
+    if 'custom_id' in data and len(data['custom_id']) > 16:
+        raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки', 404)
     if 'custom_id' not in data:
-        data['custom_id'] = get_unique_short_id()
+        short = get_unique_short_id()
+    else:
+        short = data['custom_id']
     if 'custom_id' in data and URL_map.query.filter_by(short=data['custom_id']).first() is not None:
-        raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
+        raise InvalidAPIUsage(f"Имя {data['custom_id']} уже занято.")
     original = data['url']
-    short = request.host_url + data['custom_id']
     url_obj = URL_map(original=original, short=short)
     db.session.add(url_obj)
     db.session.commit()
