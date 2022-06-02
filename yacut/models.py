@@ -8,3 +8,9 @@ class URL_map(db.Model):
     original = db.Column(db.Text, nullable=False)
     short = db.Column(db.String(16), unique=True, nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    def to_dict(self):
+        return dict(
+            url=self.original,
+            custom_id=self.short,
+        )

@@ -1,74 +1,33 @@
-from flask import abort, jsonify, request
-from random import randrange
+from flask import jsonify, redirect, request
 
 from . import app, db
-from .models import Opinion
-from .views import opinion_view, random_opinion
 from .error_handlers import InvalidAPIUsage
+from .models import URL_map
+from .views import get_long, get_unique_short_id
 
 
-@app.route('/api/opinions/<int:id>/', methods=['GET'])
-def get_opinion(id):
-    opinion = Opinion.query.get(id)
-    if opinion is None:
-        raise InvalidAPIUsage('Мнение с указанным id не найдено', 404)
-    return jsonify({'opinion': opinion.to_dict()}), 200
-
-@app.route('/api/opinions/<int:id>/', methods=['PATCH'])
-def update_opinion(id):
+@app.route('/api/id/', methods=['POST'])
+def create_id():
     data = request.get_json()
-    if (
-        'text' in data and
-        Opinion.query.filter_by(text=data['text']).first() is not None
-    ):
-        raise InvalidAPIUsage('Такое мнение уже есть в базе данных')
-    opinion = Opinion.query.get(id)
-    if opinion is None:
-        raise InvalidAPIUsage('Мнение с указанным id не найдено', 404)
-    opinion.title = data.get('title', opinion.title)
-    opinion.text = data.get('text', opinion.text)
-    opinion.source = data.get('source', opinion.source)
-    opinion.added_by = data.get('added_by', opinion.added_by)
-    # Все изменения нужно сохранить в базе данных
+    if 'url' not in data and 'short' not in data:
+        raise InvalidAPIUsage('Пустой запрос!')
+    if 'url' not in data:
+        raise InvalidAPIUsage('Обязательное поле пустое!')
+    if 'custom_id' not in data:
+        data['custom_id'] = get_unique_short_id()
+    if 'custom_id' in data and URL_map.query.filter_by(short=data['custom_id']).first() is not None:
+        raise InvalidAPIUsage('Такое короткое имя уже есть!')
+    original = data['url']
+    short = data['custom_id']
+    url_obj = URL_map(original=original, short=short)
+    db.session.add(url_obj)
     db.session.commit()
-    # При создании или изменении объекта вернём сам объект и код 201
-    return jsonify({'opinion': opinion.to_dict()}), 201
+    return jsonify({'create_id': url_obj.to_dict()}), 201
 
 
-@app.route('/api/opinions/<int:id>/', methods=['DELETE'])
-def delete_opinion(id):
-    opinion = Opinion.query.get(id)
-    if opinion is None:
-        raise InvalidAPIUsage('Мнение с указанным id не найдено', 404)
-    db.session.delete(opinion)
-    db.session.commit()
-    return '', 204
-
-
-@app.route('/api/opinions/', methods=['GET'])
-def get_opinions():
-    opinions = Opinion.query.all()
-    opinions_list = [opinion.to_dict() for opinion in opinions]
-    return jsonify({'opinions': opinions_list}), 200
-
-
-@app.route('/api/opinions/', methods=['POST'])
-def add_opinion():
-    data = request.get_json()
-    if 'title' not in data or 'text' not in data:
-        raise InvalidAPIUsage('В запросе отсутствуют обязательные поля')
-    if Opinion.query.filter_by(text=data['text']).first() is not None:
-        raise InvalidAPIUsage('Такое мнение уже есть в базе данных')              
-    opinion = Opinion()
-    opinion.from_dict(data)
-    db.session.add(opinion)
-    db.session.commit()
-    return jsonify({'opinion': opinion.to_dict()}), 201
-
-
-@app.route('/api/get-random-opinion/', methods=['GET'])
-def get_random_opinion():
-    opinion = random_opinion()
-    if opinion is not None:
-        return jsonify({'opinion': opinion.to_dict()}), 200
-    raise InvalidAPIUsage('В базе данных нет мнений', 404)
+@app.route('/api/id/<short_id>/', methods=['GET'])
+def get_url(short_id):
+    long = get_long(short_id)
+    if long:
+        return redirect(long), 201
+    raise InvalidAPIUsage('Такое короткое имя не существует!')

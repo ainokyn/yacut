@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from mixer.backend.flask import mixer as _mixer
+
 from yacut import yacut
 
 load_dotenv()

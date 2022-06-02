@@ -1,18 +1,20 @@
-from flask import abort, flash, redirect, render_template, url_for, request
-from . import app, db
-from . forms import URLForm
-from . models import URL_map
+import re
 import secrets
 import string
-import re
+
+from flask import abort, flash, redirect, render_template, request
+
+from . import app, db
+from .forms import URLForm
+from .models import URL_map
 
 pattern = re.compile(
-        r'^(?:http|ftp)s?://'
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
-        r'localhost|'
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
-        r'(?::\d+)?' 
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    r'^(?:http|ftp)s?://'
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
+    r'localhost|'
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+    r'(?::\d+)?'
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 def get_unique_short_id():
@@ -20,6 +22,13 @@ def get_unique_short_id():
     short_id = ''.join(secrets.choice(
         aphabet_and_nums) for i in range(6))
     return(short_id)
+
+
+def get_long(short):
+    obj = URL_map.query.filter_by(short=short).first()
+    if obj:
+        return obj.original
+    abort(404)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -57,8 +66,7 @@ def index_view():
 
 @app.route('/<short>', methods=['GET'])
 def short_url_view(short):
-    obj = URL_map.query.filter_by(short=short).first()
-    if obj:
-        long = obj.original
+    long = get_long(short)
+    if long:
         return redirect(long)
     abort(404)
