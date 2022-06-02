@@ -24,13 +24,6 @@ def get_unique_short_id():
     return(short_id)
 
 
-def get_long(short):
-    obj = URL_map.query.filter_by(short=short).first()
-    if obj:
-        return obj.original
-    abort(404)
-
-
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLForm()
@@ -66,7 +59,7 @@ def index_view():
 
 @app.route('/<short>', methods=['GET'])
 def short_url_view(short):
-    long = get_long(short)
-    if long:
-        return redirect(long)
+    obj = URL_map.query.filter_by(short=short).first()
+    if obj:
+        return redirect(obj.original)
     abort(404)
