@@ -8,19 +8,19 @@ from .views import get_unique_short_id
 
 @app.route('/api/id/', methods=['POST'])
 def create_id():
-    try:
-        data = request.get_json()
-    except Exception:
-        raise InvalidAPIUsage('Отсутствует тело запроса')
+    data = request.get_json()
+    if not data:
+        raise Exception('Отсутствует тело запроса', 400)
     original = data['url']
     if 'url' not in data:
-        raise InvalidAPIUsage(f"{original} является обязательным полем!")
+        raise Exception(f"{original} является обязательным полем!", 400)
     if 'custom_id' not in data or data['custom_id'] is None or data['custom_id'] == "":
         short = get_unique_short_id()
     if 'custom_id' in data:
         short = data['custom_id']
         if len(data['custom_id']) > 16:
-            raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки', 400)
+            return jsonify({
+                    'message': 'Указано недопустимое имя для короткой ссылки'}), 400
         if URL_map.query.filter_by(short=data['custom_id']).first() is not None:
             raise InvalidAPIUsage(f'Имя "{short}" уже занято.', 400)
     url_obj = URL_map(original=original, short=short)
