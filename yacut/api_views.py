@@ -8,10 +8,11 @@ from .views import get_unique_short_id
 
 @app.route('/api/id/', methods=['POST'])
 def create_id():
-    data = request.get_json()
-    original = data['url']
-    if not data:
+    try:
+        data = request.get_json()
+    except Exception:
         raise InvalidAPIUsage('Отсутствует тело запроса')
+    original = data['url']
     if 'url' not in data:
         raise InvalidAPIUsage(f"{original} является обязательным полем!")
     if 'custom_id' not in data or data['custom_id'] is None or data['custom_id'] == "":
