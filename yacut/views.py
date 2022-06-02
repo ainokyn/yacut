@@ -39,7 +39,7 @@ def index_view():
                 short = get_unique_short_id()
                 flash('Ссылка сгенерирована автоматически!', 'gen-message')
             if URL_map.query.filter_by(short=short).first() is not None:
-                flash('Такая коротка ссылка уже есть, попробуй снова!',
+                flash(f'Имя {short} уже занято!',
                       'error-message')
                 return render_template('index.html', form=form)
             url = URL_map(
