@@ -13,7 +13,7 @@ from .views import get_unique_short_id
 def create_id():
     data = request.get_json()
     if not data:
-        raise InvalidAPI('Отсутсвует тело запроса')
+        raise InvalidAPI('Отсутствует тело запроса')
     original = data['url']
     if not original:
         raise InvalidAPI('\"url\" является обязательным полем!')
