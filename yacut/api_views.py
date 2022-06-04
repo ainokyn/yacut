@@ -12,15 +12,19 @@ from .views import get_unique_short_id
 @app.route('/api/id/', methods=['POST'])
 def create_id():
     data = request.get_json()
-    if not data:
-        raise InvalidAPI('Отсутствует тело запроса')
+    try:
+        data = request.get_json()
+        if not data:
+            raise InvalidAPI('Отсутствует тело запроса')
+    except Exception:
+        return jsonify({"message": 'Отсутствует тело запроса'}), 400
     original = data['url']
     if not original:
         raise InvalidAPI('\"url\" является обязательным полем!')
     if not re.match(pattern, data['url']):
         return jsonify({"message": 'Недопустимое значение \"url\"'
                         }), 400
-    if 'custom_id' not in data or data['custom_id'] == "":
+    if 'custom_id' not in data or data['custom_id'] == "" or data['custom_id'] is None:
         data['custom_id'] = get_unique_short_id()
     if 'custom_id' in data:
         short = data['custom_id']
