@@ -25,7 +25,9 @@ def create_id():
     url_obj = URL_map(original=original, short=short)
     db.session.add(url_obj)
     db.session.commit()
-    return jsonify({'create_id': url_obj.to_dict()}), 201
+    link = request.host_url + short
+    return jsonify({'url': original,
+                    'short_link': link}), 201
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])
