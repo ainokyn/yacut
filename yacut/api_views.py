@@ -17,15 +17,14 @@ def create_id():
     except Exception:
         return jsonify({"message": 'Отсутствует тело запроса'}), 400
     try:
-        original = data['url']
+        data['url']
     except Exception:
         return jsonify({"message":
                         '\"url\" является обязательным полем!'}), 400
     if not re.match(pattern, data['url']):
         return jsonify({"message": 'Недопустимое значение \"url\"'
                         }), 400
-    if ('custom_id' not in data or
-            data['custom_id'] == "" or data['custom_id'] is None):
+    if 'custom_id' not in data or data['custom_id'] == "" or data['custom_id'] is None:
         data['custom_id'] = get_unique_short_id()
     else:
         short = data['custom_id']
@@ -39,11 +38,11 @@ def create_id():
         if URL_map.query.filter_by(short=data['custom_id']
                                    ).first() is not None:
             return jsonify({'message': f'Имя "{short}" уже занято.'}), 400
-    url_obj = URL_map(original=original, short=short)
+    url_obj = URL_map(original=data['url'], short=data['custom_id'])
     db.session.add(url_obj)
     db.session.commit()
-    link = request.host_url + short
-    return jsonify({'url': original,
+    link = request.host_url + data['custom_id']
+    return jsonify({'url': data['url'],
                     'short_link': link}), 201
 
 
