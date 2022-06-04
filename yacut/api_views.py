@@ -27,7 +27,7 @@ def create_id():
     if ('custom_id' not in data or
             data['custom_id'] == "" or data['custom_id'] is None):
         data['custom_id'] = get_unique_short_id()
-    if 'custom_id' in data:
+    else:
         short = data['custom_id']
         if (len(data['custom_id']) > 16) or (not
                                              re.match(
