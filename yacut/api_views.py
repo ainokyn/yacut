@@ -4,7 +4,6 @@ from flask import jsonify, request
 
 from . import app, db
 from .constant import pattern, pattern_2
-from .error_handlers import InvalidAPI
 from .models import URL_map
 from .views import get_unique_short_id
 
@@ -17,9 +16,11 @@ def create_id():
             raise Exception('Отсутствует тело запроса')
     except Exception:
         return jsonify({"message": 'Отсутствует тело запроса'}), 400
-    original = data['url']
-    if not original:
-        raise InvalidAPI('\"url\" является обязательным полем!')
+    try:
+        original = data['url']
+    except Exception:
+        return jsonify({"message":
+                        '\"url\" является обязательным полем!'}), 400
     if not re.match(pattern, data['url']):
         return jsonify({"message": 'Недопустимое значение \"url\"'
                         }), 400
