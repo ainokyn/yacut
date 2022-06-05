@@ -10,11 +10,19 @@ from .forms import URLForm
 from .models import URL_map
 
 
-def get_unique_short_id():
-    aphabet_and_nums = string.ascii_letters + string.digits
+def get_short_id():
+    alphabet_and_nums = string.ascii_letters + string.digits
     short_id = ''.join(secrets.choice(
-        aphabet_and_nums) for i in range(6))
-    return(short_id)
+        alphabet_and_nums) for i in range(6))
+    return short_id
+
+
+def get_unique_short_id():
+    short = get_short_id()
+    obj = URL_map.query.filter_by(short=short).first()
+    if obj:
+        get_unique_short_id()
+    return short
 
 
 @app.route('/', methods=['GET', 'POST'])

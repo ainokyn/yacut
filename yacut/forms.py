@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Optional
 
 
 class URLForm(FlaskForm):
@@ -10,7 +10,8 @@ class URLForm(FlaskForm):
     )
     custom_id = StringField(
         'Напишите короткий идентификатор',
-        validators=[Length(0, 16,
-                           message='Максимальная длина 16 символов')]
+        validators=[Length(max=16,
+                           message='Максимальная длина 16 символов'),
+                    Optional()]
     )
     submit = SubmitField('Создать')
